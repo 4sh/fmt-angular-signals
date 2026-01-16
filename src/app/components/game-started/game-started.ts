@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, computed, EventEmitter, input, Input, linkedSignal, model, output, Output} from '@angular/core';
 import {PokemonGameProgression} from "../../services/pokemon-progress-service";
 import {MyCurrentTeam} from "../my-current-team/my-current-team";
 import {Pokemon, searchEvolvePokemon} from "../../types/pokemon";
@@ -18,43 +18,32 @@ import {PokemonBox} from "../pokemon-box/pokemon-box";
     styleUrl: './game-started.scss',
 })
 export class GameStarted {
-    currentTrainer!: PokemonTrainer;
     boxVisible = false;
 
-    @Output() gameFinished = new EventEmitter<void>();
+    gameFinished = output()
 
-    private _gameProgression!: PokemonGameProgression
-
-    get gameProgression() {
-        return this._gameProgression;
-    }
-
-    @Input() set gameProgression(gameProgression: PokemonGameProgression) {
-        this._gameProgression = gameProgression
-        this.currentTrainer = gameProgression.pokemonTrainer!
-    }
+    gameProgression = model.required<PokemonGameProgression>()
+    currentTrainer = computed(() => this.gameProgression().pokemonTrainer)
 
     fightArena = (badge: Badge) => {
-        const currentTrainer = this.gameProgression.pokemonTrainer;
-        if (!currentTrainer) return;
+        const currentTrainer = this.currentTrainer();
         const updatedBadges = [...currentTrainer.badges];
 
         if (this.canUnlockBadge(badge)) {
             updatedBadges.push(badge);
             const newState: PokemonGameProgression = {
-                ...this.gameProgression,
+                ...this.gameProgression(),
                 pokemonTrainer: {
                     ...currentTrainer,
                     badges: updatedBadges
                 }
             };
-            this.gameProgression = newState;
+            this.gameProgression.set(newState);
         }
     }
 
     levelUp = (pokemonToLevelUp: Pokemon) => {
-        const currentTrainer = this.gameProgression.pokemonTrainer;
-        if (!currentTrainer) return;
+        const currentTrainer = this.currentTrainer();
 
         const updatedTeam = currentTrainer.currentTeam.map(p => {
             if (p === pokemonToLevelUp) {
@@ -64,19 +53,18 @@ export class GameStarted {
         });
 
         const newState: PokemonGameProgression = {
-            ...this.gameProgression,
+            ...this.gameProgression(),
             pokemonTrainer: {
                 ...currentTrainer,
                 currentTeam: updatedTeam
             }
         };
 
-        this.gameProgression = newState;
+        this.gameProgression.set(newState);
     }
 
     levelUpMax = (pokemonToLevelUp: Pokemon) => {
-        const currentTrainer = this.gameProgression.pokemonTrainer;
-        if (!currentTrainer) return;
+        const currentTrainer = this.currentTrainer();
 
         const updatedTeam = currentTrainer.currentTeam.map(p => {
             if (p === pokemonToLevelUp) {
@@ -86,20 +74,19 @@ export class GameStarted {
         });
 
         const newState: PokemonGameProgression = {
-            ...this.gameProgression,
+            ...this.gameProgression(),
             pokemonTrainer: {
                 ...currentTrainer,
                 currentTeam: updatedTeam
             }
         };
 
-        this.gameProgression = newState;
+        this.gameProgression.set(newState);
     }
 
 
     evolve = (pokemonToEvolve: Pokemon) => {
-        const currentTrainer = this.gameProgression.pokemonTrainer;
-        if (!currentTrainer) return;
+        const currentTrainer = this.currentTrainer();
 
         const updatedTeam = currentTrainer.currentTeam.map(p => {
             if (p.id === pokemonToEvolve.id) {
@@ -115,20 +102,20 @@ export class GameStarted {
         });
 
         const newState: PokemonGameProgression = {
-            ...this.gameProgression,
+            ...this.gameProgression(),
             pokemonTrainer: {
                 ...currentTrainer,
                 currentTeam: updatedTeam
             }
         };
 
-        this.gameProgression = newState;
+        this.gameProgression.set(newState);
     }
 
     displayBox = (isVisible: boolean) => this.boxVisible = isVisible
 
     private canUnlockBadge = (badge: Badge) => {
-        const currentTrainer = this.gameProgression.pokemonTrainer;
+        const currentTrainer = this.currentTrainer();
         if (!currentTrainer) return;
         return currentTrainer.currentTeam.reduce((acc, p) => acc + p.level, 0) >= badge.requiredTotalLevel
             && !currentTrainer.badges.map(b => b.id).includes(badge.id);

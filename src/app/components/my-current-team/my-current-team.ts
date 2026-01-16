@@ -1,4 +1,13 @@
-import {ChangeDetectionStrategy, Component, computed, EventEmitter, Input, Output, signal, Signal} from '@angular/core';
+import {
+    ChangeDetectionStrategy,
+    Component,
+    computed,
+    EventEmitter,
+    input, output,
+    Output,
+    signal,
+    Signal
+} from '@angular/core';
 import {EvolutionType, Pokemon} from "../../types/pokemon";
 import {PokemonTrainer} from "../../types/trainer";
 
@@ -10,30 +19,18 @@ import {PokemonTrainer} from "../../types/trainer";
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class MyCurrentTeam {
+    trainer = input.required<PokemonTrainer>();
+    leveledUp = output<Pokemon>();
+    leveledUpMax= output<Pokemon>();
+    evolved = output<Pokemon>();
+    teamChanged = output<void>();
 
-    @Output() leveledUp = new EventEmitter<Pokemon>()
-    @Output() leveledUpMax = new EventEmitter<Pokemon>()
-    @Output() evolved = new EventEmitter<Pokemon>()
-    @Output() teamChanged = new EventEmitter<void>()
-
+    myTeam = computed(() => this.trainer().currentTeam)
+    myBadges = computed(() => this.trainer().badges)
     maxLevel = computed(() => this.myBadges().reduce((acc, b) => Math.max(acc,b.levelCapToUnlock), 10))
     teamPower = computed(() => this.myTeam().reduce((acc, p) => acc + p.level, 0));
     unlockedEvolutionTypes = computed(() => this.myBadges()?.map(b => b.evolutionTypeToUnlock as EvolutionType)?.filter(et => !!et) ?? [] )
 
-    myTeam = signal(this.trainer?.currentTeam)
-    myBadges = signal(this.trainer?.badges)
-
-    private _trainer!: PokemonTrainer;
-
-    get trainer() {
-        return this._trainer;
-    }
-
-    @Input() set trainer(value: PokemonTrainer) {
-        this._trainer = value;
-        this.myTeam.set(value.currentTeam);
-        this.myBadges.set(value.badges);
-    }
 
     onLevelUp = (pokemon: Pokemon) => {
         this.leveledUp.emit(pokemon);
@@ -48,7 +45,7 @@ export class MyCurrentTeam {
     }
 
     canEvolve(pokemon: Pokemon) {
-        return this.trainer.currentTeam.filter(pokemon => {
+        return this.myTeam().filter(pokemon => {
             if (!pokemon.evolution.next || pokemon.evolution.next.length === 0) {
                 return false;
             }

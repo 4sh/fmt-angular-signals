@@ -1,15 +1,15 @@
-<my-current-team [trainer]="currentTrainer"
+<my-current-team [trainer]="currentTrainer()"
                  (leveledUp)="levelUp($event)"
                  (leveledUpMax)="levelUpMax($event)"
                  (evolved)="evolve($event)"
                  (teamChanged)="displayBox(true)"/>
-<my-current-badges [trainer]="currentTrainer" (fightingArena)="fightArena($event)"/>
-@if(currentTrainer.badges.length === 6) {
+<my-current-badges [trainer]="currentTrainer()" (fightingArena)="fightArena($event)"/>
+@if (currentTrainer().badges.length === 6) {
     <button (click)="gameFinished.emit()">
         Fin du jeu !
     </button>
 }
 @if (boxVisible) {
-    <pokemon-box (closeBox)="displayBox(false)" [trainer]="currentTrainer"
-                 [pokemonBox]="gameProgression.pokemonBox"></pokemon-box>
+    <pokemon-box (closeBox)="displayBox(false)" [trainer]="currentTrainer()"
+                 [pokemonBox]="gameProgression().pokemonBox"></pokemon-box>
 }

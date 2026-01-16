@@ -1,7 +1,7 @@
-@if (!gameProgression.pokemonTrainer) {
+@if (!gameProgression.pokemonTrainer.firstName) {
     <pokemon-trainer-creation (newPokemonTrainer)="trainerCreated.emit($event)"></pokemon-trainer-creation>
 }
-@if (gameProgression.pokemonTrainer) {
+@if (gameProgression.pokemonTrainer.firstName) {
     <pokemon-selection [currentTeam]="gameProgression.pokemonTrainer.currentTeam" ></pokemon-selection>
     @if (gameProgression.pokemonTrainer.currentTeam.length === 6) {
         <button (click)="gameStarted.emit()">

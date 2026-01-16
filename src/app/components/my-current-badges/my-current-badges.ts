@@ -1,4 +1,4 @@
-import {Component, computed, effect, EventEmitter, Input, Output, signal} from '@angular/core';
+import {Component, computed, effect, EventEmitter, input, Input, output, Output, signal} from '@angular/core';
 import {Badge, badges} from "../../types/badge";
 import {EvolutionType, evolutionTypeTranslation} from "../../types/pokemon";
 import {PokemonTrainer} from "../../types/trainer";
@@ -12,6 +12,10 @@ import {PokemonTrainer} from "../../types/trainer";
 export class MyCurrentBadges {
     badges = badges;
 
+    trainer = input.required<PokemonTrainer>();
+    myTeam = computed(() => this.trainer().currentTeam)
+    myBadges = computed(() => this.trainer().badges)
+
     maxLevel = computed(() => this.myBadges()?.reduce((acc, b) => Math.max(acc,b.levelCapToUnlock), 10))
     teamPower = computed(() => this.myTeam()?.reduce((acc, p) => acc + p.level, 0));
     unlockedEvolutionTypes = computed(() => this.myBadges()?.map(b => evolutionTypeTranslation[b.evolutionTypeToUnlock as EvolutionType])?.filter(et => !!et) ?? [] )
@@ -22,22 +26,7 @@ export class MyCurrentBadges {
     });
     canFightNextArena = computed(() => this.teamPower() >= this.minLevelTeamPower());
 
-    myTeam = signal(this.trainer?.currentTeam)
-    myBadges = signal(this.trainer?.badges)
-
-    private _trainer!: PokemonTrainer;
-
-    get trainer() {
-        return this._trainer;
-    }
-
-    @Input() set trainer(value: PokemonTrainer) {
-        this._trainer = value;
-        this.myTeam.set(value.currentTeam);
-        this.myBadges.set(value.badges);
-    }
-
-    @Output() fightingArena = new EventEmitter<Badge>();
+    fightingArena = output<Badge>();
 
     constructor() {
         effect(() => {
