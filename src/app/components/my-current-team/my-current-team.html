@@ -4,7 +4,7 @@
     Votre équipe a une puissance de {{ teamPower() }}
 </label>
 <div class="pokemon-list">
-    @for (pokemon of trainer.currentTeam; track pokemon.id) {
+    @for (pokemon of myTeam(); track pokemon.id) {
         <div class="pokemon-item">
             <label>{{ pokemon.name }}</label>
             <img [src]="pokemon.image" width="50">
