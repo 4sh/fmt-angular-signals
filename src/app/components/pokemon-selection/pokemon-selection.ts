@@ -1,8 +1,8 @@
 import {Component, inject, Input} from '@angular/core';
 import {FormsModule} from "@angular/forms";
 import {Pokemon, SimplePokemon} from "../../types/pokemon";
-import {PokemonProgressService} from "../../services/pokemon-progress-service";
 import {PokemonService} from "../../services/pokemon-service";
+import {pokemonProgressionStore} from "../../store/pokemon-progression-store";
 
 @Component({
     selector: 'pokemon-selection',
@@ -14,7 +14,7 @@ import {PokemonService} from "../../services/pokemon-service";
 })
 export class PokemonSelection {
     private pokemonService = inject(PokemonService)
-    private pokemonProgressService = inject(PokemonProgressService)
+    private pokemonProgressionStore = inject(pokemonProgressionStore)
     @Input() public currentTeam: Pokemon[] = [];
     @Input() public pokemonBox: Pokemon[] = [];
     @Input() public isPokemonBox = false
@@ -40,7 +40,7 @@ export class PokemonSelection {
     }
 
     public addOrRemove = (pokemon: SimplePokemon) => {
-        this.pokemonProgressService.addOrRemoveFromCurrentTeam(pokemon)
+        this.pokemonProgressionStore.addOrRemoveFromCurrentTeam(pokemon)
     }
 
     public hasPokemonInTeam = (pokemon: SimplePokemon) => this.currentTeam.some(p => p.id === pokemon.id)

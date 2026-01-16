@@ -1,8 +1,8 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
-import {PokemonGameProgression} from "../../services/pokemon-progress-service";
 import {PokemonTrainerCreation} from "../pokemon-trainer-creation/pokemon-trainer-creation";
 import {PokemonSelection} from "../pokemon-selection/pokemon-selection";
 import {PokemonTrainer} from "../../types/trainer";
+import {PokemonGameProgression} from "../../store/pokemon-progression-store";
 
 @Component({
   selector: 'game-init',

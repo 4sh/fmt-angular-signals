@@ -1,17 +1,14 @@
 import {Component, inject} from '@angular/core';
-import {PokemonProgressService} from "../../services/pokemon-progress-service";
 import {PokemonTrainer} from "../../types/trainer";
-import {pokemonTypes} from "../../types/pokemon";
-import {AsyncPipe} from "@angular/common";
 import {GameWon} from "../../components/game-won/game-won";
 import {GameStarted} from "../../components/game-started/game-started";
 import {FormsModule} from "@angular/forms";
 import {GameInit} from "../../components/game-init/game-init";
+import {pokemonProgressionStore} from "../../store/pokemon-progression-store";
 
 @Component({
     selector: 'pokemon-game',
     imports: [
-        AsyncPipe,
         GameWon,
         GameStarted,
         FormsModule,
@@ -21,22 +18,21 @@ import {GameInit} from "../../components/game-init/game-init";
     styleUrl: './pokemon-game.scss',
 })
 export class PokemonGame {
-    private pokemonProgressService = inject(PokemonProgressService)
-    gameProgression$ = this.pokemonProgressService.progression$;
+    pokemonProgressionStore = inject(pokemonProgressionStore)
 
     createTrainer(pokemonTrainer: PokemonTrainer) {
-        this.pokemonProgressService.createNewPokemonTrainer(pokemonTrainer);
+        this.pokemonProgressionStore.createNewPokemonTrainer(pokemonTrainer);
     }
 
     startGame() {
-        this.pokemonProgressService.startGame();
+        this.pokemonProgressionStore.startGame();
     }
 
     finishGame() {
-        this.pokemonProgressService.finishGame();
+        this.pokemonProgressionStore.finishGame();
     }
 
     reloadGame() {
-        this.pokemonProgressService.reloadGame();
+        this.pokemonProgressionStore.reloadGame();
     }
 }
