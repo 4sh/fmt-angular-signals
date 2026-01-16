@@ -3,7 +3,7 @@
     x
     <img [src]="'/assets/pokemon-logo.png'" width="100">
 </div>
-@if (gameProgression$ | async; as gameProgression) {
+@if (gameProgression(); as gameProgression) {
     @if (gameProgression.progress === 'init') {
         <game-init [gameProgression]="gameProgression"
                    (trainerCreated)="createTrainer($event)"
