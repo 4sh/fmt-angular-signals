@@ -11,7 +11,6 @@ import {GameInit} from "../../components/game-init/game-init";
 @Component({
     selector: 'pokemon-game',
     imports: [
-        AsyncPipe,
         GameWon,
         GameStarted,
         FormsModule,
@@ -22,7 +21,7 @@ import {GameInit} from "../../components/game-init/game-init";
 })
 export class PokemonGame {
     private pokemonProgressService = inject(PokemonProgressService)
-    gameProgression$ = this.pokemonProgressService.progression$;
+    gameProgression = this.pokemonProgressService.progression;
 
     createTrainer(pokemonTrainer: PokemonTrainer) {
         this.pokemonProgressService.createNewPokemonTrainer(pokemonTrainer);
