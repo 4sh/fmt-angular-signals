@@ -1,0 +1,19 @@
+<div class="header">
+    <img [src]="'/assets/4sh_learning.png'" width="100">
+    x
+    <img [src]="'/assets/pokemon-logo.png'" width="100">
+</div>
+@if (gameProgression$ | async; as gameProgression) {
+    @if (gameProgression.progress === 'init') {
+        <game-init [gameProgression]="gameProgression"
+                   (trainerCreated)="createTrainer($event)"
+                   (gameStarted)="startGame()">
+        </game-init>
+    } @else if (gameProgression.progress === 'started') {
+        <game-started [gameProgression]="gameProgression" (gameFinished)="finishGame()">
+        </game-started>
+    } @else if (gameProgression.progress === 'won') {
+        <game-won (newGame)="reloadGame()">
+        </game-won>
+    }
+}

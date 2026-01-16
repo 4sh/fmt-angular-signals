@@ -1,0 +1,54 @@
+<form class="pokemon-search" #form="ngForm" (ngSubmit)="search()">
+    <div class="pokemon-search-base">
+        <label>Recherchez vos Pokémons</label>
+        <input name="pokemon" type="text" [(ngModel)]="query">
+        <button type="submit">Recherche</button>
+        <button (click)="resetSearch()" [disabled]="!query || !pokemonList">Reset</button>
+    </div>
+    <div class="pokemon-search-additional">
+    </div>
+</form>
+
+@if (!!pokemonList.length) {
+    <div class="pokemon-selection">
+        <label>Sélectionnez vos Pokémons</label>
+        <div class="pokemon-list">
+            @if (isLoading) {
+                Chargement en cours...
+            } @else {
+                @for (pokemon of pokemonList; track pokemon.id) {
+                    <div class="pokemon-item" (click)="addOrRemove(pokemon)"
+                         [class.selected]="hasPokemonInTeam(pokemon)">
+                        <label>{{ pokemon.name }}</label>
+                        <img [src]="pokemon.image" width="50">
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+@if (!!currentTeam.length) {
+    <label>
+        Votre équipe :
+    </label>
+    <div class="pokemon-team">
+        @for (pokemon of currentTeam; track pokemon.id) {
+            <div class="pokemon-item" (click)="addOrRemove(pokemon)">
+                <label>{{ pokemon.name }}</label>
+                <img [src]="pokemon.image" width="50">
+            </div>
+        }
+    </div>
+}
+@if (isPokemonBox) {
+    <label>Votre box</label>
+    <div class="pokemon-box">
+        @for (pokemon of pokemonBox; track pokemon.id) {
+            <div class="pokemon-item" (click)="addOrRemove(pokemon)"
+                 [class.selected]="hasPokemonInTeam(pokemon)">
+                <label>{{ pokemon.name }}</label>
+                <img [src]="pokemon.image" width="50">
+            </div>
+        }
+    </div>
+}

@@ -1,0 +1,19 @@
+<form #trainerForm="ngForm" (ngSubmit)="onSubmit(trainerForm)">
+    <label>Prénom</label>
+    <input type="text" name="firstName" required #firstName="ngModel" [(ngModel)]="person.firstName">
+    <label>Nom</label>
+    <input type="text" type="text" name="lastName" required #lastName="ngModel" [(ngModel)]="person.lastName">
+    <div>
+        <label>
+            <input type="checkbox" name="wantToBePokemonTrainer" [(ngModel)]="person.wantToBePokemonTrainer"> En
+            cochant, j'accepte d'être un jour le meilleur dresseur
+        </label>
+    </div>
+    @if (showSurprisedPikachu) {
+        <label>
+            Comment ça vous ne voulez pas être le meilleur dresseur ?
+        </label>
+        <img [src]="'/assets/pikachu-surprised.png'" width="100">
+    }
+    <button type="submit" [disabled]="trainerForm.invalid">C'est parti !</button>
+</form>

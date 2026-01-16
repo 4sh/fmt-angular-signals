@@ -1,0 +1,63 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    height: 100%;
+    width: 100%;
+}
+
+.pokemon-search {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1rem;
+    &-base {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    &-additional {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+}
+
+.pokemon-selection {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.pokemon-team, .pokemon-list, .pokemon-box {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    gap: 0.5rem;
+    overflow: auto;
+    max-height: 30rem;
+}
+
+.pokemon-item {
+    display: flex;
+    width: 10%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem;
+    border-radius: 8px;
+
+    &:hover {
+        background-color: #eee;
+        cursor: pointer;
+    }
+
+    &.selected {
+        background-color: #ddd;
+
+        &:hover {
+            background-color: #eee;
+            cursor: pointer;
+        }
+    }
+}

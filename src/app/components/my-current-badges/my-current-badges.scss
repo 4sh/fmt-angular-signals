@@ -1,0 +1,35 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.badge {
+    &-list {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        gap: 0.5rem;
+        overflow: auto;
+    }
+
+    &-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 30%;
+        justify-content: space-between;
+        padding: 1rem;
+        border-radius: 8px;
+
+        img {
+            opacity: 0.3;
+        }
+
+        &.obtained {
+            img {
+                opacity: 1;
+            }
+        }
+    }
+}

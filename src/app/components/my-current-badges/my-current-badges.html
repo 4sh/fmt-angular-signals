@@ -1,0 +1,15 @@
+<h1>Mes badges</h1>
+<label>
+    Vous pouvez monter vos pokémons au niveau {{ maxLevel }} @if (!!evolutionTypes.length) {
+    et les faire évoluer via {{ evolutionTypes.join(', ') }}
+}
+</label>
+<div class="badge-list">
+    @for (badge of badges; track badge.id) {
+        <div class="badge-item" [class.obtained]="hasBadge(badge)">
+            <img [src]="badge.image" width="50">
+            <label>Vous devez avoir une puissance totale de {{ badge.requiredTotalLevel }}</label>
+            <button (click)="fightTheArena(badge)" [disabled]="hasBadge(badge)">Combattre l'arène</button>
+        </div>
+    }
+</div>

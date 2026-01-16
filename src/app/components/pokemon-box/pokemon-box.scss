@@ -1,0 +1,16 @@
+:host {
+    position: absolute;
+    top : 10%;
+    left: 10%;
+    width: 80%;
+    height: 80%;
+    background-color: white;
+    border-radius: 0.5rem;
+    border: 1px solid #ccc;
+    padding: 1rem;
+}
+
+.closeBtn {
+    margin-left: auto;
+    display: flex;
+}

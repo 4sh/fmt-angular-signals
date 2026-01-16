@@ -1,0 +1,2 @@
+<button class="closeBtn" [disabled]="trainer.currentTeam.length !== 6" (click)="closeBox.emit()">Close</button>
+<pokemon-selection [isPokemonBox]="true" [currentTeam]="trainer.currentTeam" [pokemonBox]="pokemonBox"></pokemon-selection>
