@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, EventEmitter, Input, Output} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, EventEmitter, Input, Output, signal, Signal} from '@angular/core';
 import {EvolutionType, Pokemon} from "../../types/pokemon";
 import {PokemonTrainer} from "../../types/trainer";
 
@@ -16,10 +16,12 @@ export class MyCurrentTeam {
     @Output() evolved = new EventEmitter<Pokemon>()
     @Output() teamChanged = new EventEmitter<void>()
 
-    // TODO Transformez ces variables en signaux
-    maxLevel = 10;
-    teamPower = 0;
-    unlockedEvolutionTypes: EvolutionType[] = [];
+    maxLevel = computed(() => this.myBadges().reduce((acc, b) => Math.max(acc,b.levelCapToUnlock), 10))
+    teamPower = computed(() => this.myTeam().reduce((acc, p) => acc + p.level, 0));
+    unlockedEvolutionTypes = computed(() => this.myBadges()?.map(b => b.evolutionTypeToUnlock as EvolutionType)?.filter(et => !!et) ?? [] )
+
+    myTeam = signal(this.trainer?.currentTeam)
+    myBadges = signal(this.trainer?.badges)
 
     private _trainer!: PokemonTrainer;
 
@@ -29,6 +31,8 @@ export class MyCurrentTeam {
 
     @Input() set trainer(value: PokemonTrainer) {
         this._trainer = value;
+        this.myTeam.set(value.currentTeam);
+        this.myBadges.set(value.badges);
     }
 
     onLevelUp = (pokemon: Pokemon) => {
@@ -50,7 +54,7 @@ export class MyCurrentTeam {
             }
 
             return pokemon.evolution.next.some(nextEvo => {
-                if (!this.unlockedEvolutionTypes.includes(nextEvo.type)) {
+                if (!this.unlockedEvolutionTypes().includes(nextEvo.type)) {
                     return false;
                 }
                 if (nextEvo.type === 'level' && nextEvo.level !== null) {

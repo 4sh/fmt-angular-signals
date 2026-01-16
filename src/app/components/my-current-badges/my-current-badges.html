@@ -1,7 +1,7 @@
 <h1>Mes badges</h1>
 <label>
-    Vous pouvez monter vos pokémons au niveau {{ maxLevel }} @if (!!unlockedEvolutionTypes?.length) {
-    et les faire évoluer via {{ unlockedEvolutionTypes.join(', ') }}
+    Vous pouvez monter vos pokémons au niveau {{ maxLevel() }} @if (!!unlockedEvolutionTypes().length) {
+    et les faire évoluer via {{ unlockedEvolutionTypes().join(', ') }}
 }
 </label>
 <div class="badge-list">

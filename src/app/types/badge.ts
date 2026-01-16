@@ -18,14 +18,14 @@ export const badges: Badge[] = [
     },
     {
         id: 2,
-        requiredTotalLevel: 60,
+        requiredTotalLevel: 70,
         levelCapToUnlock: 30,
         evolutionTypeToUnlock: "friendship",
         image: "/assets/badge2.png"
     },
     {
         id: 3,
-        requiredTotalLevel: 120,
+        requiredTotalLevel: 130,
         levelCapToUnlock: 40,
         evolutionTypeToUnlock: "stone",
         image: "/assets/badge3.png"

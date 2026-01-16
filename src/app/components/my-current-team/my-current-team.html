@@ -1,7 +1,7 @@
 <h1>Mon équipe</h1>
 <button (click)="teamChanged.emit()">Changer de pokemon</button>
 <label>
-    Votre équipe a une puissance de {{ teamPower }}
+    Votre équipe a une puissance de {{ teamPower() }}
 </label>
 <div class="pokemon-list">
     @for (pokemon of trainer.currentTeam; track pokemon.id) {
@@ -13,7 +13,7 @@
                 <button (click)="onEvolve(pokemon)">Faire évoluer !</button>
             } @else {
                 <div>
-                    <button (click)="onLevelUp(pokemon)" [disabled]="pokemon.level >= maxLevel">Monter de niveau
+                    <button (click)="onLevelUp(pokemon)" [disabled]="pokemon.level >= maxLevel()">Monter de niveau
                     </button>
                     <button (click)="onLevelUpMax(pokemon)">Max</button>
                 </div>
