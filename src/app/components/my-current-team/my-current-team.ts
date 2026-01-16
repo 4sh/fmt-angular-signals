@@ -16,6 +16,7 @@ export class MyCurrentTeam {
     @Output() evolved = new EventEmitter<Pokemon>()
     @Output() teamChanged = new EventEmitter<void>()
 
+    // TODO Transformez ces variables en signaux
     maxLevel = 10;
     teamPower = 0;
     unlockedEvolutionTypes: EvolutionType[] = [];

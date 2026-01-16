@@ -3,7 +3,7 @@
                  (leveledUpMax)="levelUpMax($event)"
                  (evolved)="evolve($event)"
                  (teamChanged)="displayBox(true)"/>
-<my-current-badges [myBadges]="currentTrainer.badges" (fightingArena)="fightArena($event)"/>
+<my-current-badges [trainer]="currentTrainer" (fightingArena)="fightArena($event)"/>
 @if(currentTrainer.badges.length === 6) {
     <button (click)="gameFinished.emit()">
         Fin du jeu !
