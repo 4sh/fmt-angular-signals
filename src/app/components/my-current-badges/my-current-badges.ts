@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {Component, computed, effect, EventEmitter, Input, Output, signal} from '@angular/core';
 import {Badge, badges} from "../../types/badge";
 import {EvolutionType, evolutionTypeTranslation} from "../../types/pokemon";
 import {PokemonTrainer} from "../../types/trainer";
@@ -12,21 +12,18 @@ import {PokemonTrainer} from "../../types/trainer";
 export class MyCurrentBadges {
     badges = badges;
 
-    // TODO Transformez ces variables en signaux
-    myBadges = this.trainer?.badges;
-    maxLevel = 10;
-    teamPower = 0;
-    unlockedEvolutionTypes =
-        this.myBadges?.map(b => b.evolutionTypeToUnlock as EvolutionType)
-            .filter(et => !!et)
-            .map(et => evolutionTypeTranslation[et]);
-    get minLevelTeamPower()  {
-        const ownedIds = new Set(this.myBadges?.map(b => b.id));
+    maxLevel = computed(() => this.myBadges()?.reduce((acc, b) => Math.max(acc,b.levelCapToUnlock), 10))
+    teamPower = computed(() => this.myTeam()?.reduce((acc, p) => acc + p.level, 0));
+    unlockedEvolutionTypes = computed(() => this.myBadges()?.map(b => evolutionTypeTranslation[b.evolutionTypeToUnlock as EvolutionType])?.filter(et => !!et) ?? [] )
+    minLevelTeamPower = computed(() => {
+        const ownedIds = new Set(this.myBadges()?.map(b => b.id));
         const nextArena = this.badges.find(b => !ownedIds.has(b.id));
         return nextArena ? nextArena.requiredTotalLevel : Infinity;
-    }
-    canFightNextArena =  this.teamPower >= this.minLevelTeamPower
+    });
+    canFightNextArena = computed(() => this.teamPower() >= this.minLevelTeamPower());
 
+    myTeam = signal(this.trainer?.currentTeam)
+    myBadges = signal(this.trainer?.badges)
 
     private _trainer!: PokemonTrainer;
 
@@ -36,22 +33,23 @@ export class MyCurrentBadges {
 
     @Input() set trainer(value: PokemonTrainer) {
         this._trainer = value;
-        this.myBadges = this.trainer.badges;
+        this.myTeam.set(value.currentTeam);
+        this.myBadges.set(value.badges);
     }
 
     @Output() fightingArena = new EventEmitter<Badge>();
 
     constructor() {
-        // TODO ça fonctionne pas ce truc
-        if (this.canFightNextArena ) {
-            console.log("Vous pouvez combattre l'arène suivante !")
-        }
+        effect(() => {
+            if (this.canFightNextArena() ) {
+                console.log("Vous pouvez combattre l'arène suivante !")
+            }
+        });
     }
 
     fightTheArena = (badgeToUnlock: Badge) => {
         this.fightingArena.emit(badgeToUnlock);
     }
 
-    hasBadge = (badge: Badge) => this.myBadges?.map(b => b.id).includes(badge.id);
-
+    hasBadge = (badge: Badge) => this.myBadges()?.map(b => b.id).includes(badge.id);
 }

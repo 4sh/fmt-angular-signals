@@ -6,12 +6,12 @@ import {BehaviorSubject, Observable} from "rxjs";
 type Progression = 'init' | 'started' | 'won';
 export type PokemonGameProgression = {
     progress: Progression
-    pokemonTrainer?: PokemonTrainer,
+    pokemonTrainer: PokemonTrainer,
     pokemonBox: Pokemon[]
 }
 const DEFAULT_STATE: PokemonGameProgression = {
     progress: 'init',
-    pokemonTrainer: undefined,
+    pokemonTrainer: {firstName: '', lastName: '', badges: [], currentTeam: [], wantToBePokemonTrainer: true},
     pokemonBox: []
 };
 
