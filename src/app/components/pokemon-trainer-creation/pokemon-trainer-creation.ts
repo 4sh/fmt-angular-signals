@@ -1,29 +1,37 @@
-import {Component, EventEmitter, Output} from '@angular/core';
-import {FormsModule, NgForm} from "@angular/forms";
-import {isPokemonTrainer, Person, PokemonTrainer} from "../../types/trainer";
+import {Component, EventEmitter, Output, signal} from '@angular/core';
+import {NgForm} from "@angular/forms";
+import {isPokemonTrainer, PokemonTrainer} from "../../types/trainer";
+import {apply, Field, form, minLength, required, Schema, schema} from '@angular/forms/signals';
+
 
 @Component({
     selector: 'pokemon-trainer-creation',
-    imports: [
-        FormsModule
-    ],
+    imports: [Field],
     templateUrl: './pokemon-trainer-creation.html',
     styleUrl: './pokemon-trainer-creation.scss',
 })
 export class PokemonTrainerCreation {
     @Output() newPokemonTrainer = new EventEmitter<PokemonTrainer>();
 
-    person: Person = {firstName: '', lastName: '', wantToBePokemonTrainer: false};
-    showSurprisedPikachu = false;
+    person = signal({firstName: '', lastName: '', wantToBePokemonTrainer: false});
+    form = form(this.person, path => {
+        const nameSchema: Schema<string> = schema((schemaPath) =>{
+            required(schemaPath, {message: 'Le champ est requis'})
+            minLength(schemaPath,3, {message: 'Le champ doit faire minimum 3 caractères'})
+        })
 
-    onSubmit = (form: NgForm) => {
-        if (form.invalid) return;
+        apply(path.firstName, nameSchema)
+        apply(path.lastName, nameSchema)
 
-        if (isPokemonTrainer(form.value)) {
-            this.showSurprisedPikachu = false;
-            this.newPokemonTrainer.emit(form.value);
-        } else {
-            this.showSurprisedPikachu = true;
+        required(path.wantToBePokemonTrainer)
+    })
+
+    onSubmit = () => {
+        if (this.form().invalid()) return;
+
+        const formValue = this.form().value();
+        if (isPokemonTrainer(formValue)) {
+            this.newPokemonTrainer.emit(formValue);
         }
     }
 }
