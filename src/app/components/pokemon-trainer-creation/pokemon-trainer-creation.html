@@ -1,19 +1,35 @@
-<form #trainerForm="ngForm" (ngSubmit)="onSubmit(trainerForm)">
+<form (submit)="onSubmit()">
     <label>Prénom</label>
-    <input type="text" name="firstName" required #firstName="ngModel" [(ngModel)]="person.firstName">
+    <input [field]="form.firstName" type="text">
+    @if (form.firstName().touched()) {
+        @for (error of form.firstName().errors(); track error) {
+            <label class="error">{{ error.message }}</label>
+        }
+    }
     <label>Nom</label>
-    <input type="text" type="text" name="lastName" required #lastName="ngModel" [(ngModel)]="person.lastName">
+    <input [field]="form.lastName" type="text">
+    @if (form.lastName().touched()) {
+        @for (error of form.lastName().errors(); track error) {
+            <label class="error">{{ error.message }}</label>
+        }
+    }
     <div>
         <label>
-            <input type="checkbox" name="wantToBePokemonTrainer" [(ngModel)]="person.wantToBePokemonTrainer"> En
+            <input type="checkbox" [field]="form.wantToBePokemonTrainer"> En
             cochant, j'accepte d'être un jour le meilleur dresseur
         </label>
+        @if (form.wantToBePokemonTrainer().touched()) {
+            @for (error of form.wantToBePokemonTrainer().errors(); track error) {
+                @if (error.kind === 'required') {
+                    <div class="error">
+                        <label>
+                            Comment ça vous ne voulez pas être le meilleur dresseur ?
+                        </label>
+                        <img [src]="'/assets/pikachu-surprised.png'" width="100">
+                    </div>
+                }
+            }
+        }
     </div>
-    @if (showSurprisedPikachu) {
-        <label>
-            Comment ça vous ne voulez pas être le meilleur dresseur ?
-        </label>
-        <img [src]="'/assets/pikachu-surprised.png'" width="100">
-    }
-    <button type="submit" [disabled]="trainerForm.invalid">C'est parti !</button>
+    <button type="submit" [disabled]="form().invalid()">C'est parti !</button>
 </form>
