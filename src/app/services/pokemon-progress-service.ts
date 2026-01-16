@@ -1,7 +1,7 @@
-import {Injectable} from '@angular/core';
-import {Pokemon, SimplePokemon, simplePokemonToPokemon} from "../types/pokemon";
-import {PokemonTrainer} from "../types/trainer";
-import {BehaviorSubject, Observable} from "rxjs";
+import { Injectable, signal, computed, effect } from '@angular/core';
+import {Pokemon, searchEvolvePokemon, SimplePokemon, simplePokemonToPokemon} from "../types/pokemon";
+import { PokemonTrainer } from "../types/trainer";
+import {Badge} from "../types/badge";
 
 type Progression = 'init' | 'started' | 'won';
 export type PokemonGameProgression = {
@@ -9,9 +9,10 @@ export type PokemonGameProgression = {
     pokemonTrainer: PokemonTrainer,
     pokemonBox: Pokemon[]
 }
+
 const DEFAULT_STATE: PokemonGameProgression = {
     progress: 'init',
-    pokemonTrainer: {firstName: '', lastName: '', badges: [], currentTeam: [], wantToBePokemonTrainer: true},
+    pokemonTrainer: { firstName: '', lastName: '', badges: [], currentTeam: [], wantToBePokemonTrainer: true },
     pokemonBox: []
 };
 
@@ -19,110 +20,110 @@ const DEFAULT_STATE: PokemonGameProgression = {
     providedIn: 'root',
 })
 export class PokemonProgressService {
-
-    private progressionSubject = new BehaviorSubject<PokemonGameProgression>(DEFAULT_STATE);
-
-    public progression$: Observable<PokemonGameProgression> = this.progressionSubject.asObservable();
-
     private readonly STORAGE_KEY = 'pokemon-progress';
+
+    private state = signal<PokemonGameProgression>(DEFAULT_STATE);
+    public progression = this.state.asReadonly();
 
     constructor() {
         this.loadProgress();
-    }
-
-    get currentValue(): PokemonGameProgression {
-        return this.progressionSubject.value;
-    }
-
-    addToBox(pokemon: Pokemon) {
-        const newState = {
-            ...this.currentValue,
-            pokemonBox: [...this.currentValue.pokemonBox, pokemon]
-        };
-        this.progressionSubject.next(newState);
-        this.saveProgress(newState);
+        effect(() => {
+            const currentState = this.state();
+            localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+                progression: currentState
+            }));
+        });
     }
 
     createNewPokemonTrainer(pokemonTrainer: PokemonTrainer) {
-        const newState = {...this.currentValue, pokemonTrainer: {...pokemonTrainer, currentTeam: [], badges: []}};
-        this.progressionSubject.next(newState);
-        this.saveProgress(newState);
+        this.state.update(current => ({
+            ...current,
+            pokemonTrainer: { ...pokemonTrainer, currentTeam: [], badges: [] }
+        }));
     }
 
     addOrRemoveFromCurrentTeam(pokemon: SimplePokemon) {
-        if (!this.currentValue.pokemonTrainer) return;
+        this.state.update(current => {
+            if (!current.pokemonTrainer) return current;
 
-        const newCurrentTeam = this.currentValue.pokemonTrainer.currentTeam;
-        const newPokemonBox = this.currentValue.pokemonBox;
-        if (newCurrentTeam.map(p => p.id).includes(pokemon.id)) {
-            if (this.currentValue.progress === 'started') {
-                newPokemonBox.push(newCurrentTeam.find(p => p.id === pokemon.id)!)
+            const newCurrentTeam = [...current.pokemonTrainer.currentTeam];
+            const newPokemonBox = [...current.pokemonBox];
+
+            const isInTeam = newCurrentTeam.some(p => p.id === pokemon.id);
+
+            if (isInTeam) {
+                const pokemonToRemove = newCurrentTeam.find(p => p.id === pokemon.id);
+                if (current.progress === 'started' && pokemonToRemove) {
+                    newPokemonBox.push(pokemonToRemove);
+                }
+                const index = newCurrentTeam.findIndex(p => p.id === pokemon.id);
+                if (index > -1) newCurrentTeam.splice(index, 1);
             }
-            newCurrentTeam.splice(newCurrentTeam.findIndex(p => p.id === pokemon.id), 1);
-        } else if (newCurrentTeam.length < 6) {
-            if (newPokemonBox.map(p => p.id).includes(pokemon.id)) {
-                const pokemonIndexBox = newPokemonBox.findIndex(p => p.id === pokemon.id)
-                newCurrentTeam.push(newPokemonBox[pokemonIndexBox]);
-                newPokemonBox.splice(pokemonIndexBox, 1)
-            } else {
-                newCurrentTeam.push(simplePokemonToPokemon(pokemon));
+            else if (newCurrentTeam.length < 6) {
+                const boxIndex = newPokemonBox.findIndex(p => p.id === pokemon.id);
+                if (boxIndex > -1) {
+                    newCurrentTeam.push(newPokemonBox[boxIndex]);
+                    newPokemonBox.splice(boxIndex, 1);
+                } else {
+                    newCurrentTeam.push(simplePokemonToPokemon(pokemon));
+                }
             }
+
+            return {
+                ...current,
+                pokemonBox: newPokemonBox,
+                pokemonTrainer: {
+                    ...current.pokemonTrainer,
+                    currentTeam: newCurrentTeam
+                }
+            };
+        });
+    }
+    fightArena(badge: Badge) {
+        const current = this.state();
+        const trainer = current.pokemonTrainer;
+
+        if (trainer && this.canUnlockBadge(badge, trainer)) {
+            this.state.update(state => ({
+                ...state,
+                pokemonTrainer: {
+                    ...trainer,
+                    badges: [...trainer.badges, badge]
+                }
+            }));
         }
-        const newState = {
-            ...this.currentValue,
-            pokemonTrainer: {
-                ...this.currentValue.pokemonTrainer,
-                currentTeam: [...newCurrentTeam]
-            }
-        };
-        this.progressionSubject.next(newState);
-        this.saveProgress(newState);
     }
 
     levelUp(pokemonToLevelUp: Pokemon) {
-        const currentTrainer = this.currentValue.pokemonTrainer;
-        if (!currentTrainer) return;
+        this.updateTeamMember(pokemonToLevelUp, (p) => ({ ...p, level: p.level + 1 }));
+    }
 
-        const updatedTeam = currentTrainer.currentTeam.map(p => {
-            if (p === pokemonToLevelUp) {
-                return {...p, level: p.level + 1};
-            }
-            return p;
+    levelUpMax(pokemonToLevelUp: Pokemon) {
+        const trainer = this.state().pokemonTrainer;
+        if (!trainer) return;
+
+        const maxLevel = trainer.badges.reduce((acc, b) => Math.max(acc, b.levelCapToUnlock), 10);
+
+        this.updateTeamMember(pokemonToLevelUp, (p) => ({ ...p, level: maxLevel }));
+    }
+
+    evolve(pokemonToEvolve: Pokemon) {
+        this.updateTeamMember(pokemonToEvolve, (p) => {
+            const evolution = searchEvolvePokemon(p);
+            return evolution ? { ...evolution, level: p.level } : p;
         });
-
-        const newState: PokemonGameProgression = {
-            ...this.currentValue,
-            pokemonTrainer: {
-                ...currentTrainer,
-                currentTeam: updatedTeam
-            }
-        };
-
-        this.progressionSubject.next(newState);
-        this.saveProgress(newState);
     }
 
     startGame() {
-        const newState = {
-            ...this.currentValue,
-            progress: 'started' as Progression
-        };
-        this.progressionSubject.next(newState);
-        this.saveProgress(newState);
+        this.state.update(c => ({ ...c, progress: 'started' }));
     }
 
     finishGame() {
-        const newState = {
-            ...this.currentValue,
-            progress: 'won' as Progression
-        };
-        this.progressionSubject.next(newState);
-        this.saveProgress(newState);
+        this.state.update(c => ({ ...c, progress: 'won' }));
     }
 
     reloadGame() {
-        this.progressionSubject.next(DEFAULT_STATE);
-        this.saveProgress(DEFAULT_STATE);
+        this.state.set(DEFAULT_STATE);
     }
 
     private loadProgress() {
@@ -131,7 +132,8 @@ export class PokemonProgressService {
             try {
                 const parsed = JSON.parse(saved);
                 if (parsed && parsed.progression) {
-                    this.progressionSubject.next(parsed.progression);
+                    // On met à jour le signal avec la valeur sauvegardée
+                    this.state.set(parsed.progression);
                 }
             } catch (e) {
                 console.error('Erreur lecture save', e);
@@ -139,9 +141,25 @@ export class PokemonProgressService {
         }
     }
 
-    private saveProgress(state: PokemonGameProgression) {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
-            progression: state
-        }));
+    private updateTeamMember(targetPokemon: Pokemon, updateFn: (p: Pokemon) => Pokemon) {
+        this.state.update(current => {
+            if (!current.pokemonTrainer) return current;
+
+            const updatedTeam = current.pokemonTrainer.currentTeam.map(p =>
+                p.id === targetPokemon.id ? updateFn(p) : p
+            );
+
+            return {
+                ...current,
+                pokemonTrainer: { ...current.pokemonTrainer, currentTeam: updatedTeam }
+            };
+        });
+    }
+
+    private canUnlockBadge(badge: Badge, trainer: PokemonTrainer): boolean {
+        const totalLevel = trainer.currentTeam.reduce((acc, p) => acc + p.level, 0);
+        const alreadyHasBadge = trainer.badges.some(b => b.id === badge.id);
+
+        return totalLevel >= badge.requiredTotalLevel && !alreadyHasBadge;
     }
 }
